@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1043793702478",
+    "project_id": "payment-b7c3a",
+    "storage_bucket": "payment-b7c3a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1043793702478:android:ea61ae4850c8d5a55a5d1f",
+        "android_client_info": {
+          "package_name": "com.nitrrsss.payment"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1043793702478-b6i7618509edhasp0nhtqdogi63f3iim.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDiThPeeUSsP6wSOj9dfXSsq5swWO3jlxs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1043793702478-b6i7618509edhasp0nhtqdogi63f3iim.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
