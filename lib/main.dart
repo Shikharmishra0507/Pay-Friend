@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:payment/pages/home_page.dart';
+import 'package:payment/pages/wrapper.dart';
 import 'pages/phone_auth_screen.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
+import './services/authentication.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -10,7 +15,6 @@ void main() async {
   );
   runApp(MyApp());
 }
-
 
 class MyApp extends StatelessWidget {
   final Map<int, Color> _yellow700Map = {
@@ -31,13 +35,17 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: MaterialColor(Colors.blue[600]!.value, _yellow700Map),
-      ),
-      home: PhoneAuthScreen(),
-    );
+    return StreamProvider<User?>.value(
+        value: Authentication().isAuthenticated,
+        initialData: null,
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Pay Friend',
+          theme: ThemeData(
+            primarySwatch:
+                MaterialColor(Colors.blue[600]!.value, _yellow700Map),
+          ),
+          home: Wrapper(),
+        ));
   }
 }
