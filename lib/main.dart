@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:payment/pages/expense_page.dart';
 import 'package:payment/pages/home_page.dart';
+import 'package:payment/pages/information/name_page.dart';
 import 'package:payment/pages/wrapper.dart';
 import 'pages/phone_auth_screen.dart';
 import 'firebase_options.dart';
@@ -45,7 +47,7 @@ class MyApp extends StatelessWidget {
             primarySwatch:
                 MaterialColor(Colors.blue[600]!.value, _yellow700Map),
           ),
-          home: Wrapper(),
+          home: Wrapper()
         ));
   }
 }

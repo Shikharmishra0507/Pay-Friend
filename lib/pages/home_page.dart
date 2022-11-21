@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:contacts_service/contacts_service.dart';
+import 'package:payment/models/users.dart';
+import 'package:payment/pages/expense_page.dart';
+import 'package:payment/pages/pay_via_phone_number.dart';
+import 'package:payment/pages/pay_via_qr.dart';
+import 'package:payment/services/authentication.dart';
 import '../services/contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../services/database/user_details.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -25,6 +32,8 @@ class _HomePageState extends State<HomePage> {
   bool _contactsLoading = false;
 
   // Function to get permission from the user
+
+  String currentUserId = FirebaseAuth.instance.currentUser!.uid;
   _contactsPermissions() async {
     await Permission.contacts.request();
     PermissionStatus permission = await Permission.contacts.status;
@@ -39,13 +48,21 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  List<LocalUser> users = [];
   //Function to import contacts
   getContacts() async {
     PermissionStatus contactsPermissionsStatus = await _contactsPermissions();
     if (contactsPermissionsStatus == PermissionStatus.granted) {
       List<Item> contacts = await Contacts().requiredPhoneNumbers();
-      setState(() {
-        _contacts = contacts;
+
+      List<LocalUser> temp = await UserDetails().fetchAllRegisteredUsers();
+      setState(()  {
+        users = temp;
+        print(users);
+        users.forEach((element) {
+          print(element.name!);
+        });
+       
       });
     }
   }
@@ -68,67 +85,137 @@ class _HomePageState extends State<HomePage> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-        appBar: AppBar(title: Text("Pay-Friend"),),
+        appBar: AppBar(
+          title: Text("Pay-Friend"),
+        ),
         drawer: Drawer(
           child: SingleChildScrollView(
               child: Column(
             children: [
               SizedBox(
-                height: 20,
+                height: 40,
               ),
-              ElevatedButton(onPressed: (){}, child: Text("Profile")),
-              SizedBox(
-                height: 20,
-              ),
-              ElevatedButton(onPressed: (){}, child: Text("My Expenses")),
-              SizedBox(
-                height: 20,
-              ),
-              ElevatedButton(onPressed: (){}, child: Text("My QR")),
+              ElevatedButton(
+                  onPressed: () async {
+                    await Authentication().signOut();
+                  },
+                  child: Text("Logout")),
             ],
           )),
         ),
         body: Container(
-          child: Column(
-            children: [
-              Container(
-                width: size.width,
-                height: size.height * 0.1,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemBuilder: (BuildContext context, int index) {
-                    return Padding(
-                      padding:EdgeInsets.all(10.0),
-                        child: Card(
-                      child: Center(child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(options[index]),
-                      )),
-                    ));
-                  },
-                  itemCount: options.length,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Container(
+                  width: size.width,
+                  height: size.height * 0.1,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (BuildContext context, int index) {
+                      return Padding(
+                          padding: EdgeInsets.all(10.0),
+                          child: Card(
+                              child: ElevatedButton(
+                                  child: Center(
+                                      child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(options[index]),
+                                  )),
+                                  onPressed: () {
+                                    switch (index) {
+                                      case 0:
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  PayViaPhoneNumber()),
+                                        );
+                                        break;
+                                      case 1:
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => PayViaQR()),
+                                        );
+                                        break;
+                                      case 2:
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  ExpensePage()),
+                                        );
+                                        break;
+                                    }
+                                  })));
+                    },
+                    itemCount: options.length,
+                  ),
                 ),
-              ),
-              SizedBox(
-                height: 30,
-              ),
-              Text("Contacts",style: TextStyle(fontSize: 25),),
-              SizedBox(height:30,),
-              if (_contactsLoading) Center(child: CircularProgressIndicator()),
-              if (!_contactsLoading &&
-                  (_contacts == null || _contacts!.length == 0))
-                Center(child: Text("No Contacts")),
-              if (!_contactsLoading && _contacts != null)
-                SingleChildScrollView(
-                    child: Column(
-                  children: _contacts!.map((phone) {
-                    return Padding(padding:EdgeInsets.all(16) ,child:Card(elevation:5,child:Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Text(phone.value.toString()),
-                    )));
-                  }).toList(),
-                ))
-            ],
+                SizedBox(
+                  height: 30,
+                ),
+                Text(
+                  "Contacts",
+                  style: TextStyle(fontSize: 25),
+                ),
+                SizedBox(
+                  height: 30,
+                ),
+                if (_contactsLoading)
+                  Center(child: CircularProgressIndicator()),
+                if (!_contactsLoading && (users == null || users.length == 0))
+                  Center(child: Text("No Contacts")),
+                if (!_contactsLoading && users != null)
+                  SingleChildScrollView(
+                      child: Column(
+                    children: users.map((user) {
+                      return GestureDetector(
+                        onTap: () async {
+                          String? senderBankId = await UserDetails()
+                              .getUserBankAccountIdWithUserId(currentUserId);
+                          if (senderBankId == null) {
+                            showSnackbar(context,
+                                "No bank account with this user", true);
+                            return;
+                          }
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => PayViaPhoneNumber(
+                                      senderUserId: currentUserId,
+                                      senderBankId: senderBankId,
+                                    )),
+                          );
+                        },
+                        child: Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Card(
+                                elevation: 5,
+                                child: Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: Text(user.name!),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: Text(user.phoneNumber!),
+                                    )
+                                  ],
+                                ))),
+                      );
+                    }).toList(),
+                  )),
+                ElevatedButton(
+                    onPressed: () async {
+                      await getContacts();
+                    },
+                    child: Text("get"))
+              ],
+            ),
           ),
         ));
   }

@@ -5,5 +5,9 @@ class Authentication{
   Stream<User?> get isAuthenticated{
     return auth.authStateChanges();
   }
+  Future<void> signOut () async{
+    await auth.signOut();
+  }
+  
 
 }

@@ -32,12 +32,15 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
       duration: const Duration(seconds: 10),
     );
 
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    // ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   Future<void> phoneSignIn(BuildContext context) async {
-    if ( (_contactFormKey.currentState==null || !_contactFormKey.currentState!.validate()) && !resendCodeRequest) return;
-    if(_contactFormKey.currentState!=null)_contactFormKey.currentState?.save();
+    if ((_contactFormKey.currentState == null ||
+            !_contactFormKey.currentState!.validate()) &&
+        !resendCodeRequest) return;
+    if (_contactFormKey.currentState != null)
+      _contactFormKey.currentState?.save();
     String userPhoneNumber = countryCode + _contactField.text;
     setState(() {
       isLoading = true;
@@ -196,10 +199,9 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                                     try {
                                       await auth
                                           .signInWithCredential(credential);
-                                          
+
                                       showSnackbar(
                                           context, "Successfull", false);
-
                                     } catch (e) {
                                       showSnackbar(context, e.toString(), true);
                                     }
@@ -260,7 +262,9 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                             textAlign: TextAlign.center,
                           ),
                           onPressed: () {
-                            phoneSignIn(context);
+                            setState(() {
+                              codeSent = false;
+                            });
                           },
                         ),
                       ],
@@ -269,43 +273,84 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                 ),
               )
             : Scaffold(
-                
                 body: Stack(children: [
-                  Positioned.fill
-                  
-                  (top:0,left:0,bottom:200,
-                    child: Container(color:Colors.blueAccent,
-                    child:Align(
-                      alignment: Alignment.topCenter,
-                      child:Padding(
-                        padding:EdgeInsets.only(top:30),
-                        child:Text("Welcome!", style: TextStyle(fontSize: 30)),)))),
-                  Positioned.fill(
-                    bottom: 50,
-                    top: 140,
-                    left:30,
-                    right:30,
+                Positioned.fill(
+                    top: 0,
+                    left: 0,
+                    bottom: 200,
                     child: Container(
-                      height: 300,
-                      
-                      decoration: const BoxDecoration(boxShadow: [
-                        BoxShadow(
-                            blurRadius: 10,
-                            spreadRadius: 2,
-                            color: Colors.black)
-                      ], color: Colors.white),
-                      child: Form(
-                        key: _contactFormKey,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            const Text(
-                              "Login",
-                              style: TextStyle(fontSize: 25),
-                            ),
-                            Column(
-                              children: [
-                                Row(
+                        color: Colors.blueAccent,
+                        child: Align(
+                            alignment: Alignment.topCenter,
+                            child: Padding(
+                              padding: EdgeInsets.only(top: 30),
+                              child: Text("Welcome!",
+                                  style: TextStyle(fontSize: 30)),
+                            )))),
+                Positioned.fill(
+                  bottom: 50,
+                  top: 140,
+                  left: 30,
+                  right: 30,
+                  child: Container(
+                    height: 300,
+                    decoration: const BoxDecoration(boxShadow: [
+                      BoxShadow(
+                          blurRadius: 10, spreadRadius: 2, color: Colors.black)
+                    ], color: Colors.white),
+                    child: Form(
+                      key: _contactFormKey,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          const Text(
+                            "Login",
+                            style: TextStyle(fontSize: 25),
+                          ),
+                          Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: [
+                                  const Flexible(
+                                      flex: 1,
+                                      child: Padding(
+                                        padding: EdgeInsets.only(left: 10.0),
+                                        child: Text("Country",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16)),
+                                      )),
+                                  Flexible(
+                                    flex: 3,
+                                    child: Padding(
+                                      padding: EdgeInsets.only(left: 10.0),
+                                      child: GestureDetector(
+                                          onTap: () {
+                                            showCountryPicker(
+                                              context: context,
+                                              showPhoneCode:
+                                                  true, // optional. Shows phone code before the country name.
+                                              onSelect: (Country country) {
+                                                setState(() {
+                                                  countryCode =
+                                                      country.phoneCode;
+                                                });
+                                              },
+                                            );
+                                          },
+                                          child: Row(children: [
+                                            Text(countryCode),
+                                            const Icon(Icons.arrow_drop_down),
+                                          ])),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width,
+                                child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceAround,
                                   children: [
@@ -313,7 +358,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                                         flex: 1,
                                         child: Padding(
                                           padding: EdgeInsets.only(left: 10.0),
-                                          child: Text("Country",
+                                          child: Text("Contact",
                                               style: TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 16)),
@@ -322,92 +367,48 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                                       flex: 3,
                                       child: Padding(
                                         padding: EdgeInsets.only(left: 10.0),
-                                        child: GestureDetector(
-                                            onTap: () {
-                                              showCountryPicker(
-                                                context: context,
-                                                showPhoneCode:
-                                                    true, // optional. Shows phone code before the country name.
-                                                onSelect: (Country country) {
-                                                  setState(() {
-                                                    countryCode =
-                                                        country.phoneCode;
-                                                  });
-                                                },
-                                              );
-                                            },
-                                            child: Row(children: [
-                                              Text(countryCode),
-                                              const Icon(Icons.arrow_drop_down),
-                                            ])),
+                                        child: TextFormField(
+                                          keyboardType: TextInputType.phone,
+                                          validator: (String? phone) {
+                                            if (phone == null ||
+                                                phone.isEmpty ||
+                                                phone.length != 10) {
+                                              return "Enter valid Phone Number";
+                                            }
+
+                                            return null;
+                                          },
+                                          controller: _contactField,
+                                          decoration: const InputDecoration(
+                                              hintText:
+                                                  "Enter your contact number"),
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                                SizedBox(
-                                  width: MediaQuery.of(context).size.width,
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: [
-                                      const Flexible(
-                                          flex: 1,
-                                          child: Padding(
-                                            padding: EdgeInsets.only(left: 10.0),
-                                            child: Text("Contact",
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 16)),
-                                          )),
-                                      Flexible(
-                                        flex: 3,
-                                        child: Padding(
-                                          padding: EdgeInsets.only(left: 10.0),
-                                          child: TextFormField(
-                                            keyboardType: TextInputType.phone,
-                                            validator: (String? phone) {
-                                              if (phone == null ||
-                                                  phone.isEmpty ||
-                                                  phone.length != 10) {
-                                                return "Enter valid Phone Number";
-                                              }
-                                        
-                                              return null;
-                                            },
-                                            controller: _contactField,
-                                            decoration: const InputDecoration(
-                                                hintText:
-                                                    "Enter your contact number"),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            ElevatedButton(
-                                style: ButtonStyle(
-                                  
-                                    fixedSize: MaterialStateProperty.all(
-                                        const Size(260, 10)),
-                                    shape: MaterialStateProperty.all(
-                                        RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(18.0),
-                                            ))),
-                                onPressed: () {
-                                  FocusManager.instance.primaryFocus?.unfocus();
-                                  phoneSignIn(context);
-                                },
-                                child: const Text("Send OTP"))
-                          ],
-                        ),
+                              ),
+                            ],
+                          ),
+                          ElevatedButton(
+                              style: ButtonStyle(
+                                  fixedSize: MaterialStateProperty.all(
+                                      const Size(260, 10)),
+                                  shape: MaterialStateProperty.all(
+                                      RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(18.0),
+                                  ))),
+                              onPressed: () {
+                                FocusManager.instance.primaryFocus?.unfocus();
+                                phoneSignIn(context);
+                              },
+                              child: const Text("Send OTP"))
+                        ],
                       ),
                     ),
                   ),
-                  
-                ]));
+                ),
+              ]));
   }
 
   Widget _textFieldOTP(
