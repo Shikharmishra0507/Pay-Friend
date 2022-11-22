@@ -74,14 +74,13 @@ class UserBankDetailsProvider with ChangeNotifier {
     print("here");
     Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
     double currentAmount = double.parse(data["amount"]);
-    print(currentAmount);
+    
     if (deduct) {
       currentAmount -= amount;
     } else {
       currentAmount += amount;
     }
-    print('-=====');
-    print(currentAmount);
+    
     data["amount"] = currentAmount.toString();
     await reference.doc(userId + bankId).set(data);
   }

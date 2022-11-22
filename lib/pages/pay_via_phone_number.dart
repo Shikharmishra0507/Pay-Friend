@@ -10,11 +10,13 @@ class PayViaPhoneNumber extends StatefulWidget {
       this.recieverUserId,
       this.senderUserId,
       this.recieverBankId,
-      this.senderBankId});
+      this.senderBankId,
+      this.phoneNumber});
   String? recieverUserId;
   String? senderUserId;
   String? recieverBankId;
   String? senderBankId;
+  String? phoneNumber;
   @override
   State<PayViaPhoneNumber> createState() => _PayViaPhoneNumberState();
 }
@@ -46,7 +48,8 @@ class _PayViaPhoneNumberState extends State<PayViaPhoneNumber> {
   TextEditingController _phoneNumber = TextEditingController();
   TextEditingController _amount = TextEditingController();
   bool validatedInputFields() {
-    return _phoneNumber.text.isEmpty == false && _amount.text.isEmpty == false;
+    return (_phoneNumber.text.isEmpty == false || widget.phoneNumber != null) &&
+        _amount.text.isEmpty == false;
   }
 
   void submit(BuildContext context) async {
@@ -54,8 +57,14 @@ class _PayViaPhoneNumberState extends State<PayViaPhoneNumber> {
       showSnackbar(context, "Invalid inputs", true);
       return;
     }
-    String? recieverId =
-        await UserDetails().getUserIdWithphoneNumber(_phoneNumber.text);
+    String? recieverId;
+    if (widget.phoneNumber == null) {
+      recieverId =
+          await UserDetails().getUserIdWithphoneNumber(_phoneNumber.text);
+    } else {
+      recieverId =
+          await UserDetails().getUserIdWithphoneNumber(widget.phoneNumber!);
+    }
     print(recieverId);
     if (recieverId == null) {
       showSnackbar(
@@ -75,25 +84,31 @@ class _PayViaPhoneNumberState extends State<PayViaPhoneNumber> {
       await UserBankDetailsProvider().AddTransaction(widget.senderUserId!,
           recieverId, _amount.text, widget.senderBankId!, recieverBankId);
       double amountInDouble = double.parse(_amount.text);
+
+      List<String> selectedCategories = [];
+
+      transactionsListStatus.forEach((key, value) {
+        if (value) selectedCategories.add(key);
+      });
+
       UserTransaction senderTransaction = UserTransaction(
           senderId: widget.senderBankId,
           receiverId: recieverId,
           amount: amountInDouble,
-          status: "Success");
+          status: "Success",
+          expenseCategory: selectedCategories);
       await UserDetails()
           .setUserTransactionId(senderTransaction, widget.senderUserId!);
 
-
-UserTransaction receiverTransaction = UserTransaction(
+      UserTransaction receiverTransaction = UserTransaction(
           senderId: widget.senderBankId,
           receiverId: recieverId,
           amount: amountInDouble,
           status: "Success");
-      await UserDetails()
-          .setUserTransactionId(receiverTransaction, recieverId);
-
+      await UserDetails().setUserTransactionId(receiverTransaction, recieverId);
     } on Exception catch (e) {
       showSnackbar(context, e.toString(), true);
+
       // TODO
     }
 
@@ -132,15 +147,22 @@ UserTransaction receiverTransaction = UserTransaction(
                   child: SingleChildScrollView(
               child: Column(
                 children: [
-                  TextFormField(
-                    controller: _phoneNumber,
-                    decoration:
-                        InputDecoration(hintText: "Add reciever phone number"),
-                  ),
+                  if (widget.phoneNumber == null)
+                    TextFormField(
+                      controller: _phoneNumber,
+                      decoration: InputDecoration(
+                          hintText: "Add reciever phone number"),
+                    ),
+                  if (widget.phoneNumber != null)
+                    Text(
+                      "Paying to  =>  " + widget.phoneNumber!,
+                      style: TextStyle(fontSize: 20),
+                    ),
                   SizedBox(height: 30),
                   TextFormField(
                       controller: _amount,
-                      decoration: InputDecoration(hintText: "Enter Amount")),
+                      decoration: InputDecoration(hintText: "Enter Amount"),
+                      keyboardType: TextInputType.phone),
                   SizedBox(height: 30),
                   Wrap(
                     spacing: 10.0,

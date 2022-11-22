@@ -55,8 +55,8 @@ class UserDetails {
   }
 
   Future<String?> getUserIdWithphoneNumber(String phoneNumber) async {
-    print(phoneNumber);
     // String phoneNumberWithoutSTDCodes=phoneNumber.substring(3)
+    print(phoneNumber);
     QuerySnapshot snapshot = await reference.get();
     List<DocumentSnapshot> documents = snapshot.docs;
     String? uid;
@@ -71,6 +71,7 @@ class UserDetails {
         uid = userDataInJson["userId"];
       }
     });
+    print("uid");
     return uid;
   }
 

@@ -3,7 +3,7 @@ class UserTransaction {
   String? receiverId;
   double? amount;
   String? status;
-  String? expenseCategory;
+  List<String>? expenseCategory;
   UserTransaction(
       {this.senderId,
       this.receiverId,
@@ -18,20 +18,21 @@ class UserTransaction {
       "amount": transaction.amount,
       "status": transaction.status,
       "expenseCategory": transaction.expenseCategory == null
-          ? "Miscelleanous"
+          ? ["Miscelleanous"]
           : transaction.expenseCategory
     };
   }
 
   factory UserTransaction.fromJson(Map<String, dynamic> json) {
-    print(json);
+    List<String> expenses = [];
+    if (json["expenseCategory"] == null) expenses = [];
+    else expenses = List<String>.from(json["expenseCategory"]);
+
     return UserTransaction(
         senderId: json["senderId"],
         receiverId: json["recieverId"],
-        amount: json["amount"],
+        amount: json["amount"].toDouble(),
         status: json["status"],
-        expenseCategory:  json["expenseCategory"] == null
-            ? "Miscelleanous"
-            : json["expenseCategory"]);
+        expenseCategory: expenses);
   }
 }

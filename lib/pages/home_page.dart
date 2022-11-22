@@ -56,13 +56,12 @@ class _HomePageState extends State<HomePage> {
       List<Item> contacts = await Contacts().requiredPhoneNumbers();
 
       List<LocalUser> temp = await UserDetails().fetchAllRegisteredUsers();
-      setState(()  {
+      setState(() {
         users = temp;
         print(users);
         users.forEach((element) {
           print(element.name!);
         });
-       
       });
     }
   }
@@ -79,7 +78,7 @@ class _HomePageState extends State<HomePage> {
     'Pay via QR',
     'Manage Expenses',
   ];
-
+  bool isLoading = false;
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -87,6 +86,19 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
         appBar: AppBar(
           title: Text("Pay-Friend"),
+          actions: [
+            IconButton(
+                onPressed: () async {
+                  setState(() {
+                    isLoading = true;
+                  });
+                  await getContacts();
+                  setState(() {
+                    isLoading = false;
+                  });
+                },
+                icon: Icon(Icons.refresh))
+          ],
         ),
         drawer: Drawer(
           child: SingleChildScrollView(
@@ -104,7 +116,7 @@ class _HomePageState extends State<HomePage> {
           )),
         ),
         body: Container(
-          child: SingleChildScrollView(
+          child: isLoading ? Center(child: CircularProgressIndicator(),): SingleChildScrollView(
             child: Column(
               children: [
                 Container(
@@ -185,6 +197,7 @@ class _HomePageState extends State<HomePage> {
                             context,
                             MaterialPageRoute(
                                 builder: (context) => PayViaPhoneNumber(
+                                      phoneNumber: user.phoneNumber,
                                       senderUserId: currentUserId,
                                       senderBankId: senderBankId,
                                     )),
@@ -209,11 +222,6 @@ class _HomePageState extends State<HomePage> {
                       );
                     }).toList(),
                   )),
-                ElevatedButton(
-                    onPressed: () async {
-                      await getContacts();
-                    },
-                    child: Text("get"))
               ],
             ),
           ),
