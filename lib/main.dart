@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:payment/models/transaction_block_model.dart';
 import 'package:payment/pages/expense_page.dart';
 import 'package:payment/pages/home_page.dart';
 import 'package:payment/pages/information/name_page.dart';
+import 'package:payment/pages/qr_payment.dart';
 import 'package:payment/pages/wrapper.dart';
 import 'pages/phone_auth_screen.dart';
 import 'firebase_options.dart';
@@ -37,17 +39,22 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return StreamProvider<User?>.value(
+    return MultiProvider(providers: [
+
+
+      ChangeNotifierProvider<TodoListModel>(create: ((context) => TodoListModel())),
+      StreamProvider<User?>.value(
         value: Authentication().isAuthenticated,
         initialData: null,
-        child: MaterialApp(
+        )
+    ],child: MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Pay Friend',
           theme: ThemeData(
             primarySwatch:
                 MaterialColor(Colors.blue[600]!.value, _yellow700Map),
           ),
-          home: Wrapper()
-        ));
+          home:Wrapper()
+        ),)  ;
   }
 }

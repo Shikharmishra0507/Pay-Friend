@@ -28,7 +28,8 @@ class UserDetails {
     String id = FirebaseAuth.instance.currentUser!.uid;
     DocumentSnapshot snapshot = await reference.doc(id).get();
 
-    Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+    Map<String, dynamic>? data = snapshot.data() as Map<String, dynamic>?;
+    
     if (data == null) return null;
 
     return data["phoneNumber"];

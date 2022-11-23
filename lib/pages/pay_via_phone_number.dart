@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:payment/models/userBankDetails.dart';
 import 'package:payment/services/database/user_details.dart';
 import '../models/transactions.dart';
+import 'package:provider/provider.dart';
+import '../models/transaction_block_model.dart';
 
 class PayViaPhoneNumber extends StatefulWidget {
   PayViaPhoneNumber(
@@ -22,6 +24,7 @@ class PayViaPhoneNumber extends StatefulWidget {
 }
 
 class _PayViaPhoneNumberState extends State<PayViaPhoneNumber> {
+  bool showBlockChainProgressMessage = false;
   Map<String, bool> transactionsListStatus = {
     "Grocery": false,
     "Food": false,
@@ -44,6 +47,7 @@ class _PayViaPhoneNumberState extends State<PayViaPhoneNumber> {
     "Household",
     "Miscelleanous"
   ];
+  var listModel;
   bool isLoading = false;
   TextEditingController _phoneNumber = TextEditingController();
   TextEditingController _amount = TextEditingController();
@@ -52,7 +56,7 @@ class _PayViaPhoneNumberState extends State<PayViaPhoneNumber> {
         _amount.text.isEmpty == false;
   }
 
-  void submit(BuildContext context) async {
+  void submit(BuildContext context, TodoListModel listModels) async {
     if (!validatedInputFields()) {
       showSnackbar(context, "Invalid inputs", true);
       return;
@@ -83,6 +87,10 @@ class _PayViaPhoneNumberState extends State<PayViaPhoneNumber> {
     try {
       await UserBankDetailsProvider().AddTransaction(widget.senderUserId!,
           recieverId, _amount.text, widget.senderBankId!, recieverBankId);
+
+      await listModels.addTask("1", widget.senderUserId!, recieverId,
+          widget.senderBankId!, recieverBankId, _amount.text);
+
       double amountInDouble = double.parse(_amount.text);
 
       List<String> selectedCategories = [];
@@ -92,7 +100,7 @@ class _PayViaPhoneNumberState extends State<PayViaPhoneNumber> {
       });
 
       UserTransaction senderTransaction = UserTransaction(
-          senderId: widget.senderBankId,
+          senderId: widget.senderUserId,
           receiverId: recieverId,
           amount: amountInDouble,
           status: "Success",
@@ -101,7 +109,7 @@ class _PayViaPhoneNumberState extends State<PayViaPhoneNumber> {
           .setUserTransactionId(senderTransaction, widget.senderUserId!);
 
       UserTransaction receiverTransaction = UserTransaction(
-          senderId: widget.senderBankId,
+          senderId: widget.senderUserId,
           receiverId: recieverId,
           amount: amountInDouble,
           status: "Success");
@@ -131,6 +139,8 @@ class _PayViaPhoneNumberState extends State<PayViaPhoneNumber> {
 
   @override
   Widget build(BuildContext context) {
+    listModel = Provider.of<TodoListModel>(context);
+
     return Scaffold(
       appBar: AppBar(
           title: Text("PAY WITH PHONE NUMBER"),
@@ -140,67 +150,77 @@ class _PayViaPhoneNumberState extends State<PayViaPhoneNumber> {
               Navigator.pop(context);
             },
           )),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Container(
-              child: Center(
-                  child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  if (widget.phoneNumber == null)
-                    TextFormField(
-                      controller: _phoneNumber,
-                      decoration: InputDecoration(
-                          hintText: "Add reciever phone number"),
-                    ),
-                  if (widget.phoneNumber != null)
-                    Text(
-                      "Paying to  =>  " + widget.phoneNumber!,
-                      style: TextStyle(fontSize: 20),
-                    ),
-                  SizedBox(height: 30),
-                  TextFormField(
-                      controller: _amount,
-                      decoration: InputDecoration(hintText: "Enter Amount"),
-                      keyboardType: TextInputType.phone),
-                  SizedBox(height: 30),
-                  Wrap(
-                    spacing: 10.0,
-                    runSpacing: 8.0,
-                    children: transactionsList.map((element) {
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            transactionsListStatus[element] =
-                                !transactionsListStatus[element]!;
-                          });
-                        },
-                        child: Container(
-                            width: 120,
-                            height: 30,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                color: transactionsListStatus[element] == false
-                                    ? Colors.lightBlue
-                                    : Colors.green,
-                                border: Border.all(style: BorderStyle.solid)),
-                            child: Center(
-                                child: Text(
-                              element,
-                              style: TextStyle(color: Colors.white),
-                            ))),
-                      );
-                    }).toList(),
+      body: listModel.isLoading
+          ? Center(
+              child: Row(
+              children: [
+                Text("Connecting to blockchain.."),
+                CircularProgressIndicator()
+              ],
+            ))
+          : isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Container(
+                  child: Center(
+                      child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      if (widget.phoneNumber == null)
+                        TextFormField(
+                          controller: _phoneNumber,
+                          decoration: InputDecoration(
+                              hintText: "Add reciever phone number"),
+                        ),
+                      if (widget.phoneNumber != null)
+                        Text(
+                          "Paying to  =>  " + widget.phoneNumber!,
+                          style: TextStyle(fontSize: 20),
+                        ),
+                      SizedBox(height: 30),
+                      TextFormField(
+                          controller: _amount,
+                          decoration: InputDecoration(hintText: "Enter Amount"),
+                          keyboardType: TextInputType.phone),
+                      SizedBox(height: 30),
+                      Wrap(
+                        spacing: 10.0,
+                        runSpacing: 8.0,
+                        children: transactionsList.map((element) {
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                transactionsListStatus[element] =
+                                    !transactionsListStatus[element]!;
+                              });
+                            },
+                            child: Container(
+                                width: 120,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20),
+                                    color:
+                                        transactionsListStatus[element] == false
+                                            ? Colors.lightBlue
+                                            : Colors.green,
+                                    border:
+                                        Border.all(style: BorderStyle.solid)),
+                                child: Center(
+                                    child: Text(
+                                  element,
+                                  style: TextStyle(color: Colors.white),
+                                ))),
+                          );
+                        }).toList(),
+                      ),
+                      SizedBox(height: 20),
+                      ElevatedButton(
+                          onPressed: () {
+                            submit(context, listModel);
+                          },
+                          child: Text("Send"))
+                    ],
                   ),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                      onPressed: () {
-                        submit(context);
-                      },
-                      child: Text("Send"))
-                ],
-              ),
-            ))),
+                ))),
     );
   }
 }

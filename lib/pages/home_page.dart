@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:contacts_service/contacts_service.dart';
+import 'package:payment/models/transaction_block_model.dart';
 import 'package:payment/models/users.dart';
 import 'package:payment/pages/expense_page.dart';
 import 'package:payment/pages/pay_via_phone_number.dart';
@@ -9,6 +10,7 @@ import '../services/contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../services/database/user_details.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -83,148 +85,161 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
-    return Scaffold(
-        appBar: AppBar(
-          title: Text("Pay-Friend"),
-          actions: [
-            IconButton(
-                onPressed: () async {
-                  setState(() {
-                    isLoading = true;
-                  });
-                  await getContacts();
-                  setState(() {
-                    isLoading = false;
-                  });
-                },
-                icon: Icon(Icons.refresh))
-          ],
-        ),
-        drawer: Drawer(
-          child: SingleChildScrollView(
-              child: Column(
-            children: [
-              SizedBox(
-                height: 40,
-              ),
-              ElevatedButton(
-                  onPressed: () async {
-                    await Authentication().signOut();
-                  },
-                  child: Text("Logout")),
-            ],
-          )),
-        ),
-        body: Container(
-          child: isLoading ? Center(child: CircularProgressIndicator(),): SingleChildScrollView(
-            child: Column(
-              children: [
-                Container(
-                  width: size.width,
-                  height: size.height * 0.1,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemBuilder: (BuildContext context, int index) {
-                      return Padding(
-                          padding: EdgeInsets.all(10.0),
-                          child: Card(
-                              child: ElevatedButton(
-                                  child: Center(
-                                      child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(options[index]),
-                                  )),
-                                  onPressed: () {
-                                    switch (index) {
-                                      case 0:
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  PayViaPhoneNumber()),
-                                        );
-                                        break;
-                                      case 1:
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => PayViaQR()),
-                                        );
-                                        break;
-                                      case 2:
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  ExpensePage()),
-                                        );
-                                        break;
-                                    }
-                                  })));
+    return  Scaffold(
+            appBar: AppBar(
+              title: Text("Pay-Friend"),
+              actions: [
+                IconButton(
+                    onPressed: () async {
+                      setState(() {
+                        isLoading = true;
+                      });
+                      await getContacts();
+                      setState(() {
+                        isLoading = false;
+                      });
                     },
-                    itemCount: options.length,
-                  ),
-                ),
-                SizedBox(
-                  height: 30,
-                ),
-                Text(
-                  "Contacts",
-                  style: TextStyle(fontSize: 25),
-                ),
-                SizedBox(
-                  height: 30,
-                ),
-                if (_contactsLoading)
-                  Center(child: CircularProgressIndicator()),
-                if (!_contactsLoading && (users == null || users.length == 0))
-                  Center(child: Text("No Contacts")),
-                if (!_contactsLoading && users != null)
-                  SingleChildScrollView(
-                      child: Column(
-                    children: users.map((user) {
-                      return GestureDetector(
-                        onTap: () async {
-                          String? senderBankId = await UserDetails()
-                              .getUserBankAccountIdWithUserId(currentUserId);
-                          if (senderBankId == null) {
-                            showSnackbar(context,
-                                "No bank account with this user", true);
-                            return;
-                          }
-
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => PayViaPhoneNumber(
-                                      phoneNumber: user.phoneNumber,
-                                      senderUserId: currentUserId,
-                                      senderBankId: senderBankId,
-                                    )),
-                          );
-                        },
-                        child: Padding(
-                            padding: EdgeInsets.all(16),
-                            child: Card(
-                                elevation: 5,
-                                child: Column(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(10.0),
-                                      child: Text(user.name!),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(10.0),
-                                      child: Text(user.phoneNumber!),
-                                    )
-                                  ],
-                                ))),
-                      );
-                    }).toList(),
-                  )),
+                    icon: Icon(Icons.refresh))
               ],
             ),
-          ),
-        ));
+            drawer: Drawer(
+              child: SingleChildScrollView(
+                  child: Column(
+                children: [
+                  SizedBox(
+                    height: 40,
+                  ),
+                  ElevatedButton(
+                      onPressed: () async {
+                        await Authentication().signOut();
+                      },
+                      child: Text("Logout")),
+                ],
+              )),
+            ),
+            body: Container(
+              child: isLoading
+                  ? Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          Container(
+                            width: size.width,
+                            height: size.height * 0.1,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemBuilder: (BuildContext context, int index) {
+                                return Padding(
+                                    padding: EdgeInsets.all(10.0),
+                                    child: Card(
+                                        child: ElevatedButton(
+                                            child: Center(
+                                                child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Text(options[index]),
+                                            )),
+                                            onPressed: () {
+                                              switch (index) {
+                                                case 0:
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            PayViaPhoneNumber()),
+                                                  );
+                                                  break;
+                                                case 1:
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            PayViaQR()),
+                                                  );
+                                                  break;
+                                                case 2:
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            ExpensePage()),
+                                                  );
+                                                  break;
+                                              }
+                                            })));
+                              },
+                              itemCount: options.length,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 30,
+                          ),
+                          Text(
+                            "Contacts",
+                            style: TextStyle(fontSize: 25),
+                          ),
+                          SizedBox(
+                            height: 30,
+                          ),
+                          if (_contactsLoading)
+                            Center(child: CircularProgressIndicator()),
+                          if (!_contactsLoading &&
+                              (users == null || users.length == 0))
+                            Center(child: Text("No Contacts")),
+                          if (!_contactsLoading && users != null)
+                            SingleChildScrollView(
+                                child: Column(
+                              children: users.map((user) {
+                                return GestureDetector(
+                                  onTap: () async {
+                                    String? senderBankId = await UserDetails()
+                                        .getUserBankAccountIdWithUserId(
+                                            currentUserId);
+                                    if (senderBankId == null) {
+                                      showSnackbar(
+                                          context,
+                                          "No bank account with this user",
+                                          true);
+                                      return;
+                                    }
+
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              PayViaPhoneNumber(
+                                                phoneNumber: user.phoneNumber,
+                                                senderUserId: currentUserId,
+                                                senderBankId: senderBankId,
+                                              )),
+                                    );
+                                  },
+                                  child: Padding(
+                                      padding: EdgeInsets.all(16),
+                                      child: Card(
+                                          elevation: 5,
+                                          child: Column(
+                                            children: [
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.all(10.0),
+                                                child: Text(user.name!),
+                                              ),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.all(10.0),
+                                                child: Text(user.phoneNumber!),
+                                              )
+                                            ],
+                                          ))),
+                                );
+                              }).toList(),
+                            )),
+                        ],
+                      ),
+                    ),
+            ));
   }
 }
