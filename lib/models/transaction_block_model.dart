@@ -77,23 +77,7 @@ class TodoListModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // getTodos() async {
-  //   List totalTasksList = await _client!
-  //       .call(contract: _contract!, function: _taskCount!, params: []);
 
-  //   BigInt totalTasks = totalTasksList[0];
-  //   taskCount = totalTasks.toInt();
-  //   print(totalTasks);
-  //   todos.clear();
-  //   for (var i = 0; i < totalTasks.toInt(); i++) {
-  //     var temp = await _client!.call(
-  //         contract: _contract!, function: _todos!, params: [BigInt.from(i)]);
-  //     todos.add(Task(taskName: temp[0], isCompleted: temp[1]));
-  //   }
-
-  //   isLoading = false;
-  //   notifyListeners();
-  // }
 
   addTask(String transactionId, String senderId, String receiverId,
       String senderBankId, String receiverBankId, String amount) async {
