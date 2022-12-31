@@ -13,7 +13,7 @@ class TodoListModel extends ChangeNotifier {
   final String _wsUrl = "ws://192.168.29.49:7545/";
 
   final String _privateKey =
-      "5a1bf842b76c63a8c4446629c0390cd0f800eb0c20181b784e595c47ff1614dc";
+      "fbe4a70e1fd25d8b7f650209bcc80b40acf83d3c1f76e23e440c1c697afcc925";
   int taskCount = 0;
   Web3Client? _client;
   String? _abiCode;
@@ -47,11 +47,12 @@ class TodoListModel extends ChangeNotifier {
     _abiCode = jsonEncode(jsonAbi["abi"]);
     _contractAddress =
         EthereumAddress.fromHex(jsonAbi["networks"]["5777"]["address"]);
-    print(_contractAddress);
+    
   }
 
   Future<void> getCredentials() async {
     _credentials = await _client!.credentialsFromPrivateKey(_privateKey);
+
     _ownAddress = await _credentials!.extractAddress();
   }
 

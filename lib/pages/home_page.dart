@@ -5,6 +5,8 @@ import 'package:payment/models/users.dart';
 import 'package:payment/pages/expense_page.dart';
 import 'package:payment/pages/pay_via_phone_number.dart';
 import 'package:payment/pages/pay_via_qr.dart';
+import 'package:payment/pages/qr_generator.dart';
+import 'package:payment/pages/scan_qr.dart';
 import 'package:payment/services/authentication.dart';
 import '../services/contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -114,6 +116,19 @@ class _HomePageState extends State<HomePage> {
                         await Authentication().signOut();
                       },
                       child: Text("Logout")),
+                      SizedBox(
+                    height: 40,
+                  ),
+                  ElevatedButton(
+                      onPressed: () async {
+                        // Navigator.push(
+                        //                             context,
+                        //                             MaterialPageRoute(
+                        //                                 builder: (context) =>
+                        //                                     GenerateQR()),
+                        //                           );
+                      },
+                      child: Text("Generate QR")),
                 ],
               )),
             ),
@@ -152,12 +167,12 @@ class _HomePageState extends State<HomePage> {
                                                   );
                                                   break;
                                                 case 1:
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            PayViaQR()),
-                                                  );
+                                                  // Navigator.push(
+                                                  //   context,
+                                                  //   MaterialPageRoute(
+                                                  //       builder: (context) =>
+                                                  //           ScanQR()),
+                                                  // );
                                                   break;
                                                 case 2:
                                                   Navigator.push(

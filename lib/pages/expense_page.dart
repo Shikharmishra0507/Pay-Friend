@@ -12,7 +12,7 @@ class ExpensePage extends StatefulWidget {
 }
 
 class _ExpensePageState extends State<ExpensePage> {
-  bool emptyTransaction = false;
+  bool emptyTransaction = true;
 
   @override
   void didChangeDependencies() {
@@ -22,6 +22,7 @@ class _ExpensePageState extends State<ExpensePage> {
 
   bool isLoading = false;
   Map<String, double> dataMap = {};
+
   List<UserTransaction> transactions = [];
   void getAllTransactions() async {
     setState(() {
@@ -29,26 +30,24 @@ class _ExpensePageState extends State<ExpensePage> {
     });
     String uid = FirebaseAuth.instance.currentUser!.uid;
     transactions = await UserDetails().getUserTransactions(uid);
-    
 
     if (transactions == null || transactions.length == 0) {
       emptyTransaction = true;
-      
     } else {
-      emptyTransaction = false;
       transactions.forEach((UserTransaction transaction) {
         if (transaction.expenseCategory == null) return;
         transaction.expenseCategory!.forEach((cat) {
+          print("here");
+          emptyTransaction = false;
           double? value = dataMap[cat];
           if (value == null)
             dataMap[cat] = transaction.amount!;
           else
             dataMap[cat] = value + transaction.amount!;
-          
         });
-       
       });
     }
+    
     setState(() {
       isLoading = false;
     });

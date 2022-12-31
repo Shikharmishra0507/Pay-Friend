@@ -3,7 +3,8 @@ import 'package:payment/models/transaction_block_model.dart';
 import 'package:payment/pages/expense_page.dart';
 import 'package:payment/pages/home_page.dart';
 import 'package:payment/pages/information/name_page.dart';
-import 'package:payment/pages/qr_payment.dart';
+import 'package:payment/pages/qr_generator.dart';
+
 import 'package:payment/pages/wrapper.dart';
 import 'pages/phone_auth_screen.dart';
 import 'firebase_options.dart';
